@@ -9,10 +9,15 @@ import { getWatchlist } from "@/lib/watchlist";
 import { getNews, getStockHistory, getSymbolBoard } from "@/lib/board";
 import { priceState, textClass } from "@/lib/colors";
 import { fmtChange, fmtPct, fmtPrice, fmtTy, fmtVolume, trieuToTy } from "@/lib/format";
-import { WorkspaceTabLinks } from "@/components/workspace-tabs";
 import { chartBarCount, DEFAULT_RANGE, RANGES } from "@/widgets/index-chart/data";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ symbol: string }> }) {
+  const { symbol } = await params;
+  const s = decodeURIComponent(symbol).toUpperCase();
+  return { title: `${s} · Giá cổ phiếu · vnstock-js` };
+}
 
 export default async function StockPage({
   params,
@@ -36,7 +41,6 @@ export default async function StockPage({
 
   return (
     <div className="flex min-h-full flex-col gap-px bg-border">
-      <WorkspaceTabLinks extra={symbol} />
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-card px-3 py-2">
         <h1 className="text-lg font-bold">{symbol}</h1>
         <p className="truncate text-[13px] text-muted-foreground">{item.companyName}</p>

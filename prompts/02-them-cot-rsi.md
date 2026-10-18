@@ -6,7 +6,7 @@ Sửa một trang có sẵn. Bài này cho thấy Claude đọc quy ước trong
 
 ```
 Thêm chỉ số RSI(14) vào panel "Phiên hôm nay" của trang chi tiết mã
-(app/stock/[symbol]/page.tsx).
+(app/ma/[symbol]/page.tsx).
 
 RSI tính từ lịch sử giá ngày bằng hàm rsi của vnstock-js, tận dụng
 getStockHistory đã có trong lib/board.ts. Giá trị hiển thị 1 chữ số thập
@@ -17,7 +17,7 @@ mặc định. Thiếu lịch sử thì hiện dấu gạch.
 ## File sẽ đổi
 
 - `lib/board.ts` — thêm hàm cached tính RSI từ lịch sử đã có
-- `app/stock/[symbol]/page.tsx` — thêm dòng RSI vào panel Phiên hôm nay
+- `app/ma/[symbol]/page.tsx` — thêm dòng RSI vào panel Phiên hôm nay
 
 ## Kết quả
 

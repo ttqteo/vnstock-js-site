@@ -29,7 +29,7 @@ export async function WatchlistRail() {
             return (
               <li key={item.symbol} className="group flex items-center border-b border-border last:border-b-0">
                 <Link
-                  href={`/stock/${item.symbol}`}
+                  href={`/ma/${item.symbol}`}
                   className="flex min-w-0 flex-1 items-baseline justify-between gap-2 px-3 py-2 transition-colors hover:bg-muted/50"
                 >
                   <span className="min-w-0">

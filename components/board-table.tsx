@@ -51,7 +51,7 @@ function BoardRow({ item }: { item: PriceBoardItem }) {
   return (
     <tr className="border-b border-border/40 odd:bg-white/[0.015] hover:bg-muted [&>td]:px-1.5 [&>td]:py-0.5">
       <td className="sticky left-0 z-10 bg-card text-left">
-        <Link href={`/stock/${item.symbol}`} className={`font-bold ${matchCls}`}>{item.symbol}</Link>
+        <Link href={`/ma/${item.symbol}`} className={`font-bold ${matchCls}`}>{item.symbol}</Link>
       </td>
       <td className="text-ceil">{fmtPrice(ceil)}</td>
       <td className="text-floor">{fmtPrice(floor)}</td>

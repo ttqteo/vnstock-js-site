@@ -38,7 +38,7 @@ function TopList({ title, rows, cls }: { title: string; rows: ForeignRow[]; cls:
       <ul className="flex flex-col gap-0.5">
         {rows.map((row) => (
           <li key={row.symbol} className="flex justify-between text-[13px]">
-            <Link href={`/stock/${row.symbol}`} className="font-semibold text-primary hover:underline">{row.symbol}</Link>
+            <Link href={`/ma/${row.symbol}`} className="font-semibold text-primary hover:underline">{row.symbol}</Link>
             <span className={`num ${cls}`}>{fmtTy(Math.abs(row.netValueTy))}</span>
           </li>
         ))}
