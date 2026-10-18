@@ -1,6 +1,6 @@
 # vnstock-js-site: thiết kế lại khung và lộ trình
 
-Ngày: 2026-10-14. Trạng thái: thiết kế đã duyệt, chưa triển khai.
+Ngày: 2026-10-14. Trạng thái: thiết kế đã duyệt; bước 1 (Đổi khung) đã triển khai ở 1.1.0, M1 trở đi chưa.
 
 Site: vnstock-js.vercel.app, repo `ttqteo/vnstock-js-site` (trước là vnstock-js-starter, thư mục local vẫn là `vnstock-js-starter`).
 
@@ -87,7 +87,7 @@ Việc nặng tính trước bằng GitHub Actions:
 - Phân tích ngành dùng `ratios.json` dựng sẵn của vnstock-js; lịch sử khối ngoại dùng recorder của v2.
 - Dữ liệu trong phiên ở M3: thanh khoản lấy từ nến 1 phút của chỉ số theo request; khối ngoại theo phút cần ghi liên tục, chỉ bật khi có server Docker qua biến môi trường.
 
-Client island: bỏ quy tắc "đúng 7 client component", thay bằng nguyên tắc chỉ dùng client khi tương tác không làm được bằng server và URL. Bộ lọc và chọn sàn là form GET trên `searchParams`. Island mới: `nav-links.tsx` (tô sáng mục, cần `usePathname`), `mobile-menu.tsx`, bảng chỉ báo trong chart, `portfolio/*` (IndexedDB), `risk-calculator.tsx`.
+Client island: bỏ quy tắc "đúng 7 client component", thay bằng nguyên tắc chỉ dùng client khi tương tác không làm được bằng server và URL. Bộ lọc và chọn sàn là form GET trên `searchParams`. Island mới: `nav-links.tsx` (tô sáng mục, cần `usePathname`), `mobile-menu.tsx`, `rail-toggle.tsx` (ẩn rail, nhớ theo trình duyệt), bảng chỉ báo trong chart, `portfolio/*` (IndexedDB), `risk-calculator.tsx`.
 
 Dữ liệu người dùng: watchlist ở cookie; tab rail đang chọn ở localStorage; cài đặt ở localStorage prefix `vnstock-starter:`; danh mục ở IndexedDB database `vnstock-starter`, qua adapter cài đặt interface `Storage` của v2. Nút Xuất/Nhập JSON gom cả danh mục; trang Danh mục nhắc sao lưu vì đó là cách sao lưu duy nhất.
 
