@@ -182,6 +182,7 @@ async function IndustryFilter({
         className="h-7 rounded-md border border-input bg-background px-2 text-[13px]"
       >
         <option value="">Tất cả ngành</option>
+        {industry && !industries.includes(industry) ? <option value={industry}>{industry}</option> : null}
         {industries.map((name) => (
           <option key={name} value={name}>
             {name}
@@ -216,7 +217,11 @@ async function Board({ source, industry }: { source: Exchange | BoardGroup; indu
         </span>
       }
     >
-      <BoardTable items={sorted} />
+      {industry && sorted.length === 0 ? (
+        <p className="px-3 py-2 text-[13px] text-muted-foreground">Không có mã nào thuộc ngành này trong {source}.</p>
+      ) : (
+        <BoardTable items={sorted} />
+      )}
     </Panel>
   );
 }

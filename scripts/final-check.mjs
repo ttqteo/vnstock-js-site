@@ -346,11 +346,20 @@ async function runSteps() {
   });
 
   await step("redirects", async (page) => {
-    // A redirect() under app/loading.tsx is a streamed 200 plus a client redirect, so wait for the path.
-    await page.goto(`${BASE}/stock/FPT`, { waitUntil: "domcontentloaded" });
-    await isPath(page, "/ma/FPT");
-    await page.goto(`${BASE}/?tab=bang-gia`, { waitUntil: "domcontentloaded" });
-    await isPath(page, "/bang-gia");
+    for (const [from, pathname] of [
+      ["/?tab=bang-gia", "/bang-gia"],
+      ["/?tab=bieu-do", "/bieu-do"],
+      ["/stock/FPT", "/ma/FPT"],
+    ]) {
+      const response = await page.request.get(BASE + from, { maxRedirects: 0 });
+      assert([307, 308].includes(response.status()), `${from}: status is ${response.status()}, expected 307 or 308`);
+      const location = response.headers()["location"];
+      assert(location, `${from}: no location header`);
+      const target = new URL(location, BASE).pathname;
+      assert(target === pathname, `${from}: location is ${location}, expected path ${pathname}`);
+      await page.goto(BASE + from, { waitUntil: "domcontentloaded" });
+      await isPath(page, pathname);
+    }
   });
 
   await step("search", async (page) => {
@@ -448,6 +457,14 @@ async function runSteps() {
     );
     await boardLoaded(page);
     assert(!(await mainText(page)).includes(ERROR_TEXT), "the filtered board shows an error");
+
+    await go(page, "/bang-gia?nhom=VN30&nganh=Khong-co-nganh");
+    await mainHas(page, "Không có mã nào thuộc ngành này");
+    await select.waitFor({ timeout: 5000 }).catch(() => {});
+    if ((await select.count()) > 0) {
+      const value = await select.inputValue();
+      assert(value === "Khong-co-nganh", `the industry select shows "${value}" for an unknown nganh, expected Khong-co-nganh`);
+    }
   });
 
   await step(
