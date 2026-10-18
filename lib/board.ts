@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import vnstock, { market, news } from "./vnstock";
+import type { BoardGroup } from "./board-filter";
 import { getWatchlist } from "./watchlist";
 import type { VnstockTypes, MarketTypes } from "vnstock-js";
 
@@ -19,10 +20,10 @@ export type MarketOverview = MarketTypes.MarketOverview;
 
 const REVALIDATE = 60;
 
-/** Full price board for one exchange; one call serves every row-based widget. */
+/** Full price board for one exchange or listing group; one call serves every row-based widget. */
 export const getBoard = cache(
   unstable_cache(
-    async (exchange: Exchange): Promise<PriceBoardItem[]> => {
+    async (exchange: Exchange | BoardGroup): Promise<PriceBoardItem[]> => {
       const listed = await vnstock.stock.listing.symbolsByGroup(exchange);
       const symbols = listed.map((s) => s.symbol);
       if (symbols.length === 0) return [];
