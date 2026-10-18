@@ -10,6 +10,20 @@ const KEY = "vnstock-starter:seen-version";
  * once for whoever has not seen that version yet. */
 const CHANGELOG: { version: string; date: string; items: string[] }[] = [
   {
+    version: "1.1.0",
+    date: "2026-10-18",
+    items: [
+      "Thanh điều hướng mới: Thị trường, Bảng giá, Biểu đồ, Danh mục, Tin tức, mỗi mục một đường dẫn riêng",
+      "Dải chỉ số VNINDEX, VN30, HNX, UPCOM ngay dưới thanh điều hướng, bấm để xem biểu đồ",
+      "Cột phải thêm tab Tăng mạnh, Giảm mạnh; ẩn được cột phải khi cần chỗ rộng",
+      "Biểu đồ xem được mọi mã và chỉ số",
+      "Bảng giá chọn được nhóm VN30, VN100, HNX30 và lọc theo ngành",
+      "Trang Tin tức lọc theo mã và nguồn",
+      "Máy tính rủi ro: tính số cổ phiếu theo vốn và mức dừng lỗ",
+      "Trang mã chuyển sang /ma/<mã>, link cũ vẫn chạy",
+    ],
+  },
+  {
     version: "1.0.0",
     date: "2026-08-07",
     items: [
