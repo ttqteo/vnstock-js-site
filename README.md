@@ -1,12 +1,12 @@
-# vnstock-js-starter
+# vnstock-js-site
 
-Dashboard chứng khoán Việt Nam kiểu bảng điện, dựng trên [vnstock-js](https://github.com/ttqteo/vnstock-js) và Next.js. Fork về, sửa một file, deploy lên Vercel trong vài phút, rồi mở rộng bằng prompt với Claude Code.
+Dashboard chứng khoán Việt Nam miễn phí kiểu bảng điện, dựng trên [vnstock-js](https://github.com/ttqteo/vnstock-js) và Next.js. Bản chạy thật: [vnstock-js.vercel.app](https://vnstock-js.vercel.app).
 
-Không chứa dữ liệu nhạy cảm: watchlist của mỗi người xem lưu ngay trên trình duyệt của họ (thêm bớt trên UI, xuất/nhập được bằng JSON), repo không giữ danh sách của ai. Deploy công khai thoải mái.
+Không chứa dữ liệu nhạy cảm: watchlist của mỗi người xem lưu ngay trên trình duyệt của họ (thêm bớt trên UI, xuất/nhập được bằng JSON), server không giữ danh sách của ai.
 
-## 3 bước
+## Tự deploy bản của bạn
 
-1. Bấm **Use this template** để tạo repo của bạn
+1. Fork repo này
 2. Import repo vào [Vercel](https://vercel.com/new) và Deploy. Không cần env var, không cần cấu hình
 
 ## Chạy local

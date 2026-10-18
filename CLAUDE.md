@@ -1,6 +1,8 @@
-# vnstock-js-starter
+# vnstock-js-site
 
-Dashboard chứng khoán Việt Nam kiểu bảng điện: Next.js App Router + vnstock-js. Người dùng fork repo này và mở rộng bằng prompt, nên giữ code cùng hình dạng với code có sẵn quan trọng hơn mọi sự thông minh.
+Dashboard chứng khoán Việt Nam miễn phí kiểu bảng điện: Next.js App Router + vnstock-js, chạy công khai tại vnstock-js.vercel.app. Ai cũng có thể fork và mở rộng bằng prompt, nên giữ code cùng hình dạng với code có sẵn quan trọng hơn mọi sự thông minh.
+
+Repo từng tên `vnstock-js-starter`. Prefix localStorage `vnstock-starter:` và cookie `vnstock-starter-` cố ý giữ nguyên: đổi sẽ xóa watchlist và cài đặt của người đang dùng.
 
 ## Quy ước bắt buộc
 

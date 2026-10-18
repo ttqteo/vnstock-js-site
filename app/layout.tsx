@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Search } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 import { goToStock } from "@/app/actions";
 import { ColumnHandle } from "@/components/column-resize";
 import { PanelSkeleton, RailSkeleton } from "@/components/panel";
@@ -17,7 +17,7 @@ import { IndexList } from "@/widgets/index-list";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "vnstock-js starter",
+  title: "vnstock-js",
   description: "Dashboard chứng khoán Việt Nam, tự mở rộng bằng prompt.",
 };
 
@@ -47,7 +47,7 @@ if(css){var s=document.createElement("style");s.textContent=css;document.head.ap
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-3 py-1.5">
           <Link href="/" className="flex items-center gap-2 text-[14px] font-bold tracking-tight">
             <Image src="/vnstock.png" alt="" width={20} height={20} className="rounded-full" />
-            vnstock-js starter
+            vnstock-js
           </Link>
           <div className="flex items-center gap-1">
             <form action={goToStock} className="relative hidden md:block">
@@ -58,7 +58,17 @@ if(css){var s=document.createElement("style");s.textContent=css;document.head.ap
             <ThemeToggle />
             <WhatsNew />
             <a
-              href="https://github.com/ttqteo/vnstock-js-starter"
+              href="https://vnstock-js-docs.vercel.app"
+              target="_blank"
+              rel="noreferrer"
+              title="Tài liệu vnstock-js"
+              className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <BookOpen className="size-4" />
+              <span className="sr-only">Tài liệu vnstock-js</span>
+            </a>
+            <a
+              href="https://github.com/ttqteo/vnstock-js-site"
               target="_blank"
               rel="noreferrer"
               title="GitHub"
