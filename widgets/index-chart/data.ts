@@ -14,6 +14,9 @@ export const RANGES: RangeSpec[] = [
 
 export const DEFAULT_RANGE = "3m";
 
+/** Codes market.index() serves; they keep their mixed case. */
+export const INDEX_SYMBOLS = ["VNINDEX", "VN30", "HNXIndex", "HNXUpcomIndex"];
+
 const VISIBLE = 1250;
 const MA_WARMUP = 50;
 
@@ -27,8 +30,8 @@ export interface IndexChartData {
   date: string;
 }
 
-export async function getIndexChart(): Promise<IndexChartData | null> {
-  const bars = await getIndexHistory("VNINDEX", VISIBLE + MA_WARMUP);
+export async function getIndexChart(symbol = "VNINDEX"): Promise<IndexChartData | null> {
+  const bars = await getIndexHistory(symbol, VISIBLE + MA_WARMUP);
   if (bars.length < 2) return null;
 
   // Warmup bars exist so MA50 has a value on the first visible bar.

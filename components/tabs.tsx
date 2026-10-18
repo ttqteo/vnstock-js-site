@@ -15,6 +15,7 @@ export function Tabs({ items }: { items: TabItem[] }) {
         <Link
           key={item.href}
           href={item.href}
+          aria-current={item.active ? "page" : undefined}
           className={cn(
             "rounded-[5px] px-2.5 py-1 text-[13px] font-medium transition-colors",
             item.active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"

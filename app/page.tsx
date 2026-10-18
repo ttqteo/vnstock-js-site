@@ -1,12 +1,11 @@
-import { cookies } from "next/headers";
-import { loadPane } from "@/app/panes";
-import { Pane } from "@/components/panes";
-import { WorkspaceTabs } from "@/components/workspace-tabs";
+import { redirect } from "next/navigation";
+import { MarketPane } from "@/components/panes";
 import { normalizeExchange } from "@/lib/board";
-import { normalizeTab, TAB_COOKIE } from "@/lib/workspace";
 
 // Rendered per request; every data call underneath is cached in lib/board.ts.
 export const dynamic = "force-dynamic";
+
+const OLD_TABS: Record<string, string> = { "bang-gia": "/bang-gia", "bieu-do": "/bieu-do" };
 
 export default async function Home({
   searchParams,
@@ -14,18 +13,11 @@ export default async function Home({
   searchParams: Promise<{ ex?: string; tab?: string }>;
 }) {
   const sp = await searchParams;
-  const ex = normalizeExchange(sp.ex);
-  // ?tab= is for links from other routes; otherwise the cookie decides, so
-  // the server renders the pane the viewer left open with no flash.
-  const jar = await cookies();
-  const tab = normalizeTab(sp.tab ?? jar.get(TAB_COOKIE)?.value);
-
+  // Links from the single-page era carried ?tab=.
+  if (sp.tab && OLD_TABS[sp.tab]) redirect(OLD_TABS[sp.tab]);
   return (
-    <WorkspaceTabs
-      active={tab}
-      exchange={ex}
-      loadPane={loadPane}
-      pane={<Pane tab={tab} exchange={ex} />}
-    />
+    <div className="flex min-h-full flex-col gap-px bg-border">
+      <MarketPane exchange={normalizeExchange(sp.ex)} />
+    </div>
   );
 }
