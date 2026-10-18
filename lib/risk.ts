@@ -22,6 +22,12 @@ export type RiskResult =
   | { ok: false; error: string };
 
 const LOT = 100;
+// Float division can land just under an exact lot count (2.3% of 1e8 / 1000 / 100 gives 22.999...).
+const LOT_EPSILON = 1e-9;
+
+function wholeLots(quotient: number) {
+  return Math.floor(quotient + LOT_EPSILON);
+}
 
 export function positionSize({ capital, riskPct, entry, stop }: RiskInput): RiskResult {
   if (!(capital > 0) || !(riskPct > 0) || !(entry > 0) || !(stop > 0)) {
@@ -29,8 +35,8 @@ export function positionSize({ capital, riskPct, entry, stop }: RiskInput): Risk
   }
   if (stop >= entry) return { ok: false, error: "Giá dừng lỗ phải thấp hơn giá vào." };
   const perShareRisk = Math.round((entry - stop) * 1000);
-  const byRisk = Math.floor((capital * riskPct) / 100 / perShareRisk / LOT) * LOT;
-  const byCapital = Math.floor(capital / (entry * 1000) / LOT) * LOT;
+  const byRisk = wholeLots((capital * riskPct) / 100 / perShareRisk / LOT) * LOT;
+  const byCapital = wholeLots(capital / (entry * 1000) / LOT) * LOT;
   const shares = Math.min(byRisk, byCapital);
   if (shares <= 0) return { ok: false, error: "Vốn chưa đủ cho một lô 100 cổ phiếu với mức rủi ro này." };
   const r = entry - stop;
