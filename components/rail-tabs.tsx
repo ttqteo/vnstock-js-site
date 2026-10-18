@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-const KEY = "vnstock-starter:rail-tab";
+const KEY = "vnstock-starter:rail-tab-v2";
 
 /** Right-rail tabs. Panes are server-rendered children; this only toggles
  * visibility and remembers the last tab. */
@@ -33,15 +33,18 @@ export function RailTabs({
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex shrink-0 items-end gap-0.5 border-b border-border bg-muted/40 px-1.5 pt-1.5">
+    <div className="flex flex-col xl:h-full">
+      <div role="tablist" className="flex shrink-0 items-end gap-0.5 overflow-x-auto border-b border-border bg-muted/40 px-1.5 pt-1.5">
         {tabs.map((tab, i) => (
           <button
             key={tab}
             type="button"
+            role="tab"
+            aria-selected={i === active}
+            data-testid="rail-tab"
             onClick={() => pick(i)}
             className={cn(
-              "rounded-t-[4px] px-3 py-1.5 text-[13px] font-medium transition-colors",
+              "shrink-0 whitespace-nowrap rounded-t-[4px] px-1.5 py-1.5 text-[13px] font-medium transition-colors",
               i === active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
