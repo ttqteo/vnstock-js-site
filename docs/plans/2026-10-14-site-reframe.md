@@ -6,20 +6,22 @@
 **Verify:** `npm test && npm run build`
 **Final:** `npx playwright install chromium && npm run build && node scripts/final-check.mjs`
 
-Chuyển site từ một trang nhiều tab sang thanh điều hướng trên cùng với mỗi mục một route, thêm dải chỉ số, rail phải bốn tab, trang Tin tức, trang Nguồn dữ liệu và máy tính rủi ro. Mỗi mục là một route App Router render phía server, đọc dữ liệu qua `lib/board.ts` như cũ. Bỏ cơ chế tab giữ trong bộ nhớ (`WorkspaceTabs`, `loadPane`, cookie tab). Logic thuần nằm trong `lib/` và có test Vitest. Chạy trên vnstock-js 1.x đang dùng.
+Chuyển site từ một trang nhiều tab sang thanh điều hướng trên cùng với mỗi mục một route, thêm dải chỉ số, rail phải bốn tab, chọn nhóm trên Bảng giá, trang Tin tức, trang Nguồn dữ liệu và máy tính rủi ro. Mỗi mục là một route App Router render phía server, đọc dữ liệu qua `lib/board.ts` như cũ. Bỏ cơ chế tab giữ trong bộ nhớ (`WorkspaceTabs`, `loadPane`, cookie tab). Logic thuần nằm trong `lib/` và có test Vitest. Chạy trên vnstock-js 1.x đang dùng.
 
 Ghi chú chung cho mọi task:
-- Đọc `CLAUDE.md` của repo trước. Quy ước ở đó vẫn áp dụng, trừ những điểm Task 12 sửa lại (client island, điều hướng).
+- Đọc `CLAUDE.md` của repo trước. Quy ước ở đó vẫn áp dụng, trừ những điểm Task 13 sửa lại (client island, điều hướng).
 - UI tiếng Việt, code và comment tiếng Anh, comment tiết chế, không separator comment. Commit message tiếng Anh, không em-dash, không dòng Co-Authored-By.
 - Đơn vị: giá cổ phiếu nghìn VND (`fmtPrice`), chỉ số là điểm, `PriceBoardItem.totalValue` là triệu VND. vnstock-js 1.5.1 chưa có `changePercent` trong bảng giá, tự tính từ `price` và `referencePrice`.
 - Giữ nguyên prefix localStorage `vnstock-starter:` và cookie `vnstock-starter-`.
 - Dải chỉ số nằm trên một hàng mỏng ngay dưới thanh điều hướng ở mọi kích thước màn hình (render một lần).
 - Cơ hội và Phân tích chưa có trang, chưa hiện trên thanh điều hướng; không làm trang "Sắp có".
+- Trang mã `/ma/[symbol]` vẫn là một trang như hiện có; tách tab ở M2.
 - Mỗi task phải để `npm run typecheck` xanh khi xong; vì vậy thứ gì còn được dùng thì chỉ xóa ở task gỡ chỗ dùng cuối cùng.
+- Mỗi bước Final mà task nêu tên là một phần của tiêu chí chấp nhận task đó: reviewer đối chiếu bước ấy trong `scripts/final-check.mjs` (Task 14) với hành vi task tạo ra.
 
 ### Task 1: Vitest và Playwright
 **Depends on:** none
-**Files:** `package.json`, `package-lock.json`, `vitest.config.ts`
+**Files:** `package.json`, `package-lock.json`, `vitest.config.ts`, `tsconfig.json`
 
 Run `npm install -D vitest@3.2.4 playwright@1.47.2`.
 
@@ -27,8 +29,10 @@ Trong `package.json`, `scripts` thêm:
 
 ```json
 "test": "vitest run --passWithNoTests",
-"typecheck": "tsc --noEmit"
+"typecheck": "node -e \"require('fs').rmSync('.next/types',{recursive:true,force:true})\" && tsc --noEmit"
 ```
+
+`typecheck` xóa `.next/types` trước khi chạy `tsc`: `tsconfig.json` include thư mục đó, và sau một lần `next build` nó còn giữ type của route đã dời (`app/stock/[symbol]`), làm `tsc` báo TS2307 sai.
 
 `vitest.config.ts`:
 
@@ -157,6 +161,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { NavLinks } from "@/components/nav-links";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
@@ -177,8 +182,11 @@ export function MobileMenu() {
         {open ? <X className="size-4" /> : <Menu className="size-4" />}
       </button>
       {open && (
-        <div data-testid="mobile-menu" className="fixed inset-x-0 top-[41px] z-30 border-b border-border bg-background p-2 shadow-lg">
+        <div data-testid="mobile-menu" className="absolute inset-x-0 top-full z-30 border-b border-border bg-background p-2 shadow-lg">
           <NavLinks className="flex flex-col gap-0.5" onNavigate={() => setOpen(false)} />
+          <div className="mt-1 flex items-center gap-2 border-t border-border px-2.5 pt-1 text-[13px] text-muted-foreground">
+            Giao diện <ThemeToggle />
+          </div>
         </div>
       )}
     </div>
@@ -186,12 +194,12 @@ export function MobileMenu() {
 }
 ```
 
-`top-[41px]` là chiều cao header hiện tại; nếu ảnh chụp ở Final cho thấy lệch thì chỉnh.
+Menu định vị `absolute top-full` theo `<header>` (Task 6 thêm `relative` cho header), nên luôn bám sát mép dưới header, không phụ thuộc chiều cao cố định. Dưới `md` header ẩn nút theme (Task 6), nên menu mang theo `ThemeToggle`.
 
 Chấp nhận: `npm run typecheck` xanh. Hiển thị được kiểm ở Final, bước `nav-active` và `mobile-menu`.
 
 ### Task 4: Dải chỉ số
-**Depends on:** none
+**Depends on:** Task 1
 **Files:** `widgets/index-list/index.tsx`
 
 Giữ `widgets/index-list/data.ts`. Thêm export `IndexStrip` (nằm ngang, mỗi thẻ là link tới biểu đồ chỉ số đó) vào `widgets/index-list/index.tsx`. **Giữ nguyên** export `IndexList` hiện có, vì `app/layout.tsx` còn dùng; Task 6 xóa nó.
@@ -338,13 +346,19 @@ export async function MoversRail({ direction }: { direction: "up" | "down" }) {
 }
 ```
 
-Chấp nhận: `npx vitest run lib/__tests__/movers.test.ts` 4 passed; typecheck xanh.
+Chấp nhận: `npx vitest run lib/__tests__/movers.test.ts` 4 passed; typecheck xanh. Hiển thị kiểm ở Final, bước `rail-tabs` (nội dung tab Tăng mạnh và Giảm mạnh).
 
 ### Task 6: Layout mới
 **Depends on:** Task 3, Task 4, Task 5
 **Files:** `app/layout.tsx`, `app/globals.css`, `components/rail-tabs.tsx`, `components/column-resize.tsx`, `components/rail-toggle.tsx`, `components/site-footer.tsx`, `widgets/index-list/index.tsx`
 
-1. **Header** (`app/layout.tsx`): bỏ import `IndexList`, thêm `IndexStrip`, `NavLinks`, `MobileMenu`, `RailToggle`, `SiteFooter`, `MoversRail`. Bọc logo và `<NavLinks className="hidden items-center gap-0.5 md:flex" />` trong `<div className="flex items-center gap-3">`. Trong cụm nút bên phải: `<RailToggle />` trước `<LocalSettings />`, `<MobileMenu />` ở cuối.
+1. **Header** (`app/layout.tsx`): bỏ import `IndexList`, thêm `IndexStrip`, `NavLinks`, `MobileMenu`, `RailToggle`, `SiteFooter`, `MoversRail`. `<header>` thêm class `relative` (menu điện thoại định vị theo nó). Bọc logo và `<NavLinks className="hidden items-center gap-0.5 md:flex" />` trong `<div className="flex items-center gap-3">`. Cụm nút bên phải, theo thứ tự:
+   - form tìm mã: bỏ `hidden md:block` (luôn hiện, `relative`), ô `Input` đổi `w-36` thành `w-28 md:w-36`;
+   - `<RailToggle />`;
+   - `<div className="hidden items-center gap-1 md:flex">` bọc `LocalSettings`, `ThemeToggle`, `WhatsNew`, link Tài liệu và link GitHub (điện thoại chỉ còn logo, tìm mã, nút menu; theme nằm trong menu);
+   - `<MobileMenu />` ở cuối.
+
+   Viết lại docblock của `RootLayout`: document không bao giờ cuộn; header gồm logo, thanh điều hướng (`NavLinks`) và cụm nút; dải chỉ số ngay dưới; hai cột nội dung và rail phải, từ `xl` mỗi cột tự cuộn, dưới `xl` rail xếp dưới nội dung. Không còn nhắc `WorkspaceTabs` hay "three columns".
 2. **Dải chỉ số** ngay sau `</header>`:
 
 ```tsx
@@ -460,18 +474,18 @@ export function SiteFooter() {
 }
 ```
 
-7. `components/rail-tabs.tsx`: đổi `KEY` thành `"vnstock-starter:rail-tab-v2"` (thứ tự tab đã đổi; giữ key cũ thì người đang chọn "Tin tức" ở index 1 mở nhầm "Tăng mạnh"). Div ngoài cùng đổi `h-full` thành `xl:h-full`. Thêm `data-testid="rail-tab"` lên mỗi nút tab.
-8. `components/column-resize.tsx`: bỏ nhánh `left` (`DEFAULTS`, `LIMITS`, `VARS` chỉ còn `right`, `type Side = "right"`), mặc định `right: 300`; giới hạn 220 đến 440 như cũ.
+7. `components/rail-tabs.tsx`: đổi `KEY` thành `"vnstock-starter:rail-tab-v2"` (thứ tự tab đã đổi; giữ key cũ thì người đang chọn "Tin tức" ở index 1 mở nhầm "Tăng mạnh"). Div ngoài cùng đổi `h-full` thành `xl:h-full`. Mỗi nút tab thêm `data-testid="rail-tab"` và `aria-selected={i === active}`; div chứa các nút thêm `role="tablist"`, mỗi nút `role="tab"`.
+8. `components/column-resize.tsx`: bỏ nhánh `left` (`DEFAULTS`, `LIMITS`, `VARS` chỉ còn `right`, `type Side = "right"`), mặc định `right: 300`; giới hạn 220 đến 440 như cũ. Thêm `data-testid="column-handle"` lên div `role="separator"`.
 9. `widgets/index-list/index.tsx`: xóa export `IndexList` (không còn ai dùng) và import `Panel`/`PanelError` nếu thừa.
 
-Chấp nhận: typecheck và build xanh. Hiển thị kiểm ở Final, các bước `nav-active`, `index-strip`, `rail-tabs`, `rail-collapse`, `mobile-menu`, `light-theme`.
+Chấp nhận: typecheck và build xanh; `grep -n "WorkspaceTab\|three columns" app/layout.tsx` không ra gì. Hiển thị kiểm ở Final, các bước `nav-active`, `index-strip`, `rail-tabs`, `rail-collapse`, `rail-resize`, `mobile-menu`, `light-theme`, `data-source` (footer).
 
 ### Task 7: Trang mã chuyển sang `/ma/[symbol]`
-**Depends on:** none
+**Depends on:** Task 1
 **Files:** `app/stock/[symbol]/page.tsx`, `app/ma/[symbol]/page.tsx`, `app/actions.ts`, `components/board-table.tsx`, `components/watchlist-rail.tsx`, `widgets/foreign-flow/index.tsx`, `widgets/heatmap/index.tsx`, `prompts/02-them-cot-rsi.md`, `prompts/03-widget-top-tang-giam.md`
 
-1. `git mv "app/stock/[symbol]/page.tsx" "app/ma/[symbol]/page.tsx"`, xóa thư mục `app/stock` nếu rỗng.
-2. Trong trang mới: bỏ import và dòng `<WorkspaceTabLinks extra={symbol} />`. Thêm:
+1. `mkdir -p "app/ma/[symbol]"` rồi `git mv "app/stock/[symbol]/page.tsx" "app/ma/[symbol]/page.tsx"` (`git mv` không tự tạo thư mục đích), xóa thư mục `app/stock` nếu rỗng.
+2. Trong trang mới: bỏ import và dòng `<WorkspaceTabLinks extra={symbol} />` (định nghĩa của nó ở `components/workspace-tabs.tsx` để nguyên, Task 8 xóa file). Thêm:
 
 ```tsx
 export async function generateMetadata({ params }: { params: Promise<{ symbol: string }> }) {
@@ -484,12 +498,13 @@ export async function generateMetadata({ params }: { params: Promise<{ symbol: s
 3. Đổi mọi `/stock/` thành `/ma/` trong `app/actions.ts` (`redirect(\`/ma/${q}\`)`), `components/board-table.tsx`, `components/watchlist-rail.tsx`, `widgets/foreign-flow/index.tsx`, `widgets/heatmap/index.tsx`. Trong hai file prompt, đổi `app/stock/[symbol]/page.tsx` thành `app/ma/[symbol]/page.tsx` và `/stock/mã` thành `/ma/mã`.
 4. Redirect `/stock/:symbol` thuộc Task 8 (`next.config.ts`), không làm ở đây.
 
-Chấp nhận: `grep -rn "/stock/\|WorkspaceTabLinks" app components widgets prompts` không ra kết quả; typecheck xanh. Kiểm ở Final, bước `stock-page` và `search`.
+Chấp nhận: `grep -rn "/stock/" app components widgets prompts` và `grep -rn "WorkspaceTabLinks" app` không ra kết quả; typecheck xanh. Kiểm ở Final, bước `stock-page` và `search`.
 
 ### Task 8: Tách pane thành route
-**Depends on:** Task 7
-**Files:** `components/panes.tsx`, `app/page.tsx`, `app/bang-gia/page.tsx`, `app/bieu-do/page.tsx`, `widgets/index-chart/index.tsx`, `widgets/index-chart/data.ts`, `next.config.ts`, `app/panes.tsx`, `components/workspace-tabs.tsx`, `lib/workspace.ts`
+**Depends on:** Task 6, Task 7
+**Files:** `components/panes.tsx`, `components/tabs.tsx`, `app/page.tsx`, `app/bang-gia/page.tsx`, `app/bieu-do/page.tsx`, `widgets/index-chart/index.tsx`, `widgets/index-chart/data.ts`, `next.config.ts`, `app/panes.tsx`, `components/workspace-tabs.tsx`, `lib/workspace.ts`
 
+0. `components/tabs.tsx`: mỗi `Link` thêm `aria-current={item.active ? "page" : undefined}`, để tab đang chọn có dấu hiệu máy đọc được (Final dùng nó).
 1. `components/panes.tsx`: xóa hàm `Pane` và import `WorkspaceTab`. `ExchangeTabs` nhận thêm `basePath` và dựng `href: \`${basePath}?ex=${e}\``. Export `MarketPane` (gọi `ExchangeTabs` với `basePath="/"`), `BoardPane` (`basePath="/bang-gia"`), `ChartPane`. Comment đầu file: mỗi pane là nội dung của một route.
 2. `ChartPane({ symbol })`: `<Suspense key={symbol} fallback={<PanelSkeleton title={symbol} className="flex-1" />}><SymbolChart symbol={symbol} /></Suspense>`, phía trên là form GET chọn mã:
 
@@ -581,7 +596,7 @@ async redirects() {
 },
 ```
 
-Chấp nhận: `grep -rn "?tab=\|WorkspaceTab\|loadPane\|lib/workspace" app components lib widgets` không ra gì ngoài `OLD_TABS` của `app/page.tsx`; typecheck và build xanh. Kiểm ở Final, các bước `nav-active`, `chart-symbol`, `exchange`, `redirects`.
+Chấp nhận: `grep -rn "?tab=\|WorkspaceTab\|loadPane\|lib/workspace" app components lib widgets` không ra gì ngoài comment `?tab=` cạnh `OLD_TABS` trong `app/page.tsx`; typecheck và build xanh. Kiểm ở Final, các bước `nav-active`, `chart-symbol`, `exchange`, `redirects`.
 
 ### Task 9: Trang Tin tức
 **Depends on:** Task 1
@@ -640,8 +655,9 @@ export function filterBySource<T extends WithSource>(items: T[], source: string 
 - `searchParams`: `ma`, `nguon`. `ma` hợp lệ (`/^[A-Za-z0-9]{3,10}$/`) thì `getNews(ma.toUpperCase())`, không thì `getTodayNews()`; `try/catch`, lỗi thì `PanelError`.
 - Thanh lọc: form GET ô "Lọc theo mã" (`name="ma"`), và `Tabs` các nguồn từ `sourcesOf(items)`: "Tất cả" cộng tối đa 8 nguồn, href giữ `ma`.
 - Danh sách `NewsItem large`, không giới hạn 15 dòng; rỗng thì "Không có tin phù hợp." Gắn `data-testid="news-list"` lên `<ul>`.
+- `NewsRail` của rail gắn `data-testid="news-rail"` lên `<ul>`.
 
-Chấp nhận: `npx vitest run lib/__tests__/news-filter.test.ts` 3 passed; build xanh. Kiểm ở Final, bước `news`.
+Chấp nhận: `npx vitest run lib/__tests__/news-filter.test.ts` 3 passed; build xanh. Kiểm ở Final, bước `news` và `rail-tabs` (tab Tin tức của rail).
 
 ### Task 10: Máy tính rủi ro và trang Danh mục
 **Depends on:** Task 1
@@ -743,16 +759,16 @@ export function positionSize({ capital, riskPct, entry, stop }: RiskInput): Risk
 ```
 
 `components/risk-calculator.tsx`: `"use client"`, 4 ô `Input` (class `num`) có `name` lần lượt `capital`, `riskPct`, `entry`, `stop`; mặc định vốn 100000000, rủi ro 1, giá vào và dừng lỗ trống. Gọi `positionSize` mỗi lần đổi:
-- `ok: false` và đã nhập đủ thì hiện lỗi `text-down`;
+- `ok: false` và đã nhập đủ thì hiện lỗi `text-down` (`data-testid="risk-error"`);
 - `ok: true` thì hiện Số cổ phiếu (`data-testid="risk-shares"`), Giá trị lệnh (`fmtInt` + " đ"), Chiếm % vốn, Tiền mất nếu chạm dừng lỗ, Mục tiêu 2R và 3R (`fmtPrice`).
-Lưu 4 giá trị vào localStorage `vnstock-starter:risk-calc` trong `try/catch`. Chú thích nhỏ: "Lô 100 cổ phiếu. Chưa tính phí giao dịch và thuế."
+Lưu 4 giá trị vào localStorage `vnstock-starter:risk-calc` trong `try/catch`, và đọc lại khi mount (trong `useEffect`, để không lệch hydration) nên reload vẫn giữ số đã nhập. Chú thích nhỏ: "Lô 100 cổ phiếu. Chưa tính phí giao dịch và thuế."
 
 `app/danh-muc/page.tsx` (`metadata.title = "Danh mục · vnstock-js"`): `grid gap-px bg-border md:grid-cols-2`, một `Panel` "Máy tính rủi ro" chứa `<RiskCalculator />`, một `Panel` "Danh mục" một câu: quản lý danh mục nhiều tài khoản và nhật ký giao dịch, lưu ngay trên trình duyệt, sẽ có ở bản sau.
 
 Chấp nhận: `npx vitest run lib/__tests__/risk.test.ts` 5 passed; build xanh. Kiểm ở Final, bước `risk-calc`.
 
 ### Task 11: Trang Nguồn dữ liệu
-**Depends on:** none
+**Depends on:** Task 1
 **Files:** `app/nguon-du-lieu/page.tsx`
 
 Server component tĩnh, `metadata.title = "Nguồn dữ liệu và phương pháp · vnstock-js"`, nội dung trong `Panel`, chữ `text-[14px] leading-relaxed`, tiêu đề trang `<h1>Nguồn dữ liệu và phương pháp</h1>`:
@@ -765,8 +781,84 @@ Server component tĩnh, `metadata.title = "Nguồn dữ liệu và phương phá
 
 Chấp nhận: build xanh. Kiểm ở Final, bước `data-source`.
 
-### Task 12: CLAUDE.md, README, có gì mới
-**Depends on:** Task 6, Task 8, Task 9, Task 10, Task 11
+### Task 12: Chọn nhóm trên Bảng giá
+**Depends on:** Task 8
+**Files:** `lib/board-filter.ts`, `lib/__tests__/board-filter.test.ts`, `lib/board.ts`, `components/panes.tsx`, `app/bang-gia/page.tsx`
+
+`/bang-gia?nhom=VN30` hiện bảng giá của một nhóm niêm yết thay cho cả sàn; `nganh=<tên ngành>` lọc tiếp theo ngành (cùng phân ngành mà heatmap dùng). Mọi thứ là link và form GET, không thêm client component.
+
+Test trước, `lib/__tests__/board-filter.test.ts`:
+
+```ts
+import { describe, expect, it } from "vitest";
+import { byIndustry, industriesOf, normalizeGroup } from "../board-filter";
+
+const industryOf = { FPT: "Công nghệ", VCB: "Ngân hàng", ACB: "Ngân hàng" };
+
+describe("board filter", () => {
+  it("accepts known groups case-insensitively", () => {
+    expect(normalizeGroup("vn30")).toBe("VN30");
+    expect(normalizeGroup("HNX30")).toBe("HNX30");
+  });
+
+  it("rejects unknown or missing groups", () => {
+    expect(normalizeGroup("VN999")).toBeUndefined();
+    expect(normalizeGroup(undefined)).toBeUndefined();
+  });
+
+  it("lists the industries present, sorted", () => {
+    expect(industriesOf(["VCB", "FPT", "ACB", "XYZ"], industryOf)).toEqual(["Công nghệ", "Ngân hàng"]);
+  });
+
+  it("filters rows by industry, keeps all without one", () => {
+    const rows = [{ symbol: "FPT" }, { symbol: "VCB" }, { symbol: "ACB" }];
+    expect(byIndustry(rows, industryOf, "Ngân hàng").map((r) => r.symbol)).toEqual(["VCB", "ACB"]);
+    expect(byIndustry(rows, industryOf, undefined)).toHaveLength(3);
+  });
+});
+```
+
+`lib/board-filter.ts`:
+
+```ts
+/** Listing groups the board can show instead of a whole exchange. */
+export const BOARD_GROUPS = ["VN30", "VN100", "HNX30"] as const;
+export type BoardGroup = (typeof BOARD_GROUPS)[number];
+
+export function normalizeGroup(value: string | undefined): BoardGroup | undefined {
+  const v = value?.toUpperCase();
+  return BOARD_GROUPS.find((g) => g === v);
+}
+
+export function industriesOf(symbols: string[], industryOf: Record<string, string>): string[] {
+  const set = new Set<string>();
+  for (const s of symbols) if (industryOf[s]) set.add(industryOf[s]);
+  return [...set].sort((a, b) => a.localeCompare(b, "vi"));
+}
+
+export function byIndustry<T extends { symbol: string }>(
+  items: T[],
+  industryOf: Record<string, string>,
+  industry: string | undefined
+): T[] {
+  if (!industry) return items;
+  return items.filter((i) => industryOf[i.symbol] === industry);
+}
+```
+
+`lib/board.ts`: `getBoard` nhận `exchange: Exchange | BoardGroup` (`import type { BoardGroup } from "./board-filter"`), vì `symbolsByGroup` của VCI nhận cả sàn lẫn nhóm; sửa doc comment thành "Full price board for one exchange or listing group". Không thêm hàm mạng mới; cache key gồm tham số nên mỗi nhóm cache riêng.
+
+`components/panes.tsx`, `BoardPane({ exchange, group, industry }: { exchange: Exchange; group?: BoardGroup; industry?: string })`:
+- Hàng điều khiển `flex flex-wrap items-center gap-2 bg-card px-2 py-1.5`: `ExchangeTabs basePath="/bang-gia"` (khi có `group` thì không tab sàn nào active; thêm prop để tắt active), cạnh đó `Tabs` của `BOARD_GROUPS` (href `/bang-gia?nhom=<g>`, active khi `g === group`), và form GET `action="/bang-gia"`: input ẩn `nhom` (khi có group) hoặc `ex`, `<select name="nganh">` gốc HTML (class giống `Input`: `h-7 rounded-md border border-input bg-background px-2 text-[13px]`) với option đầu `value=""` "Tất cả ngành" rồi các ngành từ `industriesOf`, `defaultValue={industry ?? ""}`, nút `Button size="sm" variant="outline"` "Lọc".
+- Danh sách ngành cần dữ liệu, nên phần select nằm trong async server component riêng `IndustryFilter` bọc `Suspense` (fallback rỗng); lỗi `getIndustryMap` thì không render select (bảng vẫn hiện).
+- `Board` nhận `source: Exchange | BoardGroup` và `industry`: `Promise.all([getBoard(source), getIndustryMap()])`, áp `byIndustry`; nếu chỉ `getIndustryMap` lỗi mà có `industry` thì hiện `PanelError`, không có `industry` thì không cần map. Tiêu đề `Bảng giá ${source}` cộng ` · ${industry}` khi có. `Suspense key` gồm source và industry.
+
+`app/bang-gia/page.tsx`: `searchParams` thêm `nhom`, `nganh`; truyền `group={normalizeGroup(sp.nhom)}` và `industry={sp.nganh?.trim() || undefined}`.
+
+Chấp nhận: `npx vitest run lib/__tests__/board-filter.test.ts` 4 passed; typecheck và build xanh. Kiểm ở Final, bước `board-group` và `exchange`.
+
+### Task 13: CLAUDE.md, README, có gì mới
+**Depends on:** Task 6, Task 8, Task 9, Task 10, Task 11, Task 12
 **Files:** `CLAUDE.md`, `README.md`, `components/whats-new.tsx`, `package.json`
 
 1. `CLAUDE.md`:
@@ -781,14 +873,15 @@ Chấp nhận: build xanh. Kiểm ở Final, bước `data-source`.
    - "Dải chỉ số VNINDEX, VN30, HNX, UPCOM ngay dưới thanh điều hướng, bấm để xem biểu đồ"
    - "Cột phải thêm tab Tăng mạnh, Giảm mạnh; ẩn được cột phải khi cần chỗ rộng"
    - "Biểu đồ xem được mọi mã và chỉ số"
+   - "Bảng giá chọn được nhóm VN30, VN100, HNX30 và lọc theo ngành"
    - "Trang Tin tức lọc theo mã và nguồn"
    - "Máy tính rủi ro: tính số cổ phiếu theo vốn và mức dừng lỗ"
    - "Trang mã chuyển sang /ma/<mã>, link cũ vẫn chạy"
 4. `package.json`: `"version": "1.1.0"`.
 
-Chấp nhận: build xanh.
+Chấp nhận: build xanh; `grep -n '"version": "1.1.0"' package.json` và `grep -n 'version: "1.1.0"' components/whats-new.tsx` mỗi lệnh ra đúng một dòng; `grep -n "bảy client\|WorkspaceTabs\|vnstock-starter-tab\|loadPane" CLAUDE.md` không ra gì; mỗi chuỗi `rail-tab-v2`, `rail-collapsed`, `risk-calc`, `lib/nav.ts`, `npm run typecheck` đều có trong `CLAUDE.md` (grep từng chuỗi). Hiển thị kiểm ở Final, bước `whats-new`.
 
-### Task 13: Kịch bản kiểm tra cuối
+### Task 14: Kịch bản kiểm tra cuối
 **Depends on:** Task 1
 **Files:** `scripts/final-check.mjs`
 
@@ -798,23 +891,28 @@ Khung:
 - Không import được `playwright` hoặc không mở được chromium: in lý do ở dòng cuối và `process.exit(3)`.
 - Chạy `next start -p 3107` (`spawn("npx", ["next", "start", "-p", "3107"], { shell: true })`), chờ `fetch("http://localhost:3107/")` trả về (tối đa 90 giây); không lên được thì exit 1. Luôn kill server khi kết thúc (cả khi lỗi), trên Windows dùng `taskkill /pid <pid> /T /F`.
 - `OUT = process.env.ARC_FINAL_OUT || "final-out"`; mỗi bước chụp ảnh `OUT/<step>.png`; cuối cùng ghi `OUT/shots.json` dạng `[{ name: "reframe", files: [...], steps: [{ step, state, detail? }] }]`.
-- Mỗi bước bọc `try/catch`: lỗi thì state `fail` kèm `detail` là message, chạy tiếp bước sau. Có bước fail thì exit 1, không thì exit 0.
+- Mỗi bước bọc `try/catch`: qua thì state `pass`, lỗi thì state `fail` kèm `detail` là message, chạy tiếp bước sau. Có bước fail thì exit 1, không thì exit 0.
 - Dữ liệu thị trường có thể trống ngoài giờ giao dịch: chỉ kiểm cấu trúc (phần tử, URL, thuộc tính), không kiểm số liệu.
+- "Tab đang chọn" của `Tabs` (sàn, nhóm, nguồn tin) là link mang `aria-current="page"` trong `main`; của rail là `[data-testid="rail-tab"][aria-selected="true"]`. Chữ lỗi của panel ("Không tải được dữ liệu") chỉ tìm trong `main`, vì rail cũng có câu tương tự.
+- Mỗi bước mở context mới (localStorage trống) trừ khi bước đó tự reload; `whats-new` là bước duy nhất để popup tự hiện, các bước khác đặt trước `localStorage["vnstock-starter:seen-version"]` bằng version trong `package.json` (qua `addInitScript`) để popup không che nội dung.
 
 Các bước (viewport 1366×900 trừ khi ghi khác):
 1. `nav-active`: lần lượt `/`, `/bang-gia`, `/bieu-do`, `/danh-muc`, `/tin-tuc`; mỗi trang đúng một `nav[aria-label="Mục chính"] a[aria-current="page"]` và chữ của nó là nhãn tương ứng trong `NAV` (Thị trường, Bảng giá, Biểu đồ, Danh mục, Tin tức).
-2. `stock-page`: `/ma/FPT` không có link nào mang `aria-current="page"`; `document.title` chứa "FPT".
+2. `stock-page`: `/ma/FPT` không có `nav[aria-label="Mục chính"] a[aria-current="page"]`; `document.title` chứa "FPT"; `main h1` có chữ "FPT"; có `canvas` cao hơn 100px. Sau đó mở `/`, bấm link `a[href^="/ma/"]` đầu tiên trong `[data-rail]` (watchlist mặc định), URL thành `/ma/<mã của link đó>` và `main h1` là mã đó.
 3. `index-strip`: `[data-testid="index-strip"] a` có đúng 4 phần tử; bấm thẻ có chữ "VN30" thì URL thành `/bieu-do?ma=VN30` và có `canvas` cao hơn 100px.
-4. `chart-symbol`: `/bieu-do?ma=FPT` có `canvas` cao hơn 100px; `/bieu-do?ma=XXXXZ` hiện chữ "Không tải được dữ liệu" và vẫn có thanh điều hướng.
-5. `exchange`: `/bang-gia?ex=HNX` có chữ "Bảng giá HNX"; `/?ex=UPCOM` có tab "UPCOM" đang chọn.
-6. `rail-tabs`: bấm tab "Tăng mạnh" (`[data-testid="rail-tab"]`), reload, tab đó vẫn đang chọn (nền `bg-primary`, hoặc so `localStorage["vnstock-starter:rail-tab-v2"] === "1"`).
-7. `rail-collapse`: bấm `[data-testid="rail-toggle"]`, `[data-rail]` không còn hiển thị; reload, vẫn ẩn và `document.documentElement.classList.contains("rail-collapsed")`; bấm lại để mở.
-8. `redirects`: `/stock/FPT` kết thúc ở `/ma/FPT`; `/?tab=bang-gia` kết thúc ở `/bang-gia`.
-9. `search`: gõ "fpt" vào ô `input[name="q"]` ở header, Enter, URL thành `/ma/FPT`.
-10. `news`: `/tin-tuc` có `[data-testid="news-list"]` hoặc chữ "Không có tin phù hợp."; `/tin-tuc?ma=FPT` cũng vậy.
-11. `risk-calc`: `/danh-muc`, điền `capital` 100000000, `riskPct` 1, `entry` 50, `stop` 48; `[data-testid="risk-shares"]` chứa "500".
-12. `data-source`: `/nguon-du-lieu` có `h1` "Nguồn dữ liệu và phương pháp"; footer có link tới trang này.
-13. `mobile-menu` (viewport 390×844): `/`, thanh `nav` của header bị ẩn; bấm `[data-testid="mobile-menu-button"]` thì `[data-testid="mobile-menu"]` hiện; bấm "Bảng giá" thì URL thành `/bang-gia` và menu đóng; `[data-rail]` nằm dưới `main` (toạ độ `y` lớn hơn).
-14. `light-theme`: đặt `localStorage["vnstock-starter:theme"] = "light"`, reload `/`, `html` có class `light`; chụp ảnh.
+4. `chart-symbol`: `/bieu-do` có form chọn mã; điền `input[name="ma"]` là "fpt", bấm nút "Xem", URL thành `/bieu-do?ma=fpt` hoặc `/bieu-do?ma=FPT` và có `canvas` cao hơn 100px; `/bieu-do?ma=XXXXZ` có chữ "Không tải được dữ liệu" trong `main` và vẫn có `nav[aria-label="Mục chính"]`.
+5. `exchange`: mở `/bang-gia`, bấm tab "HNX" trong `main`, URL thành `/bang-gia?ex=HNX`, `main` có chữ "Bảng giá HNX" và tab "HNX" mang `aria-current="page"`; `/?ex=UPCOM` có tab "UPCOM" trong `main` mang `aria-current="page"`.
+6. `rail-tabs`: lần lượt bấm `[data-testid="rail-tab"]` "Tăng mạnh", "Giảm mạnh", "Tin tức"; sau mỗi lần bấm, nút đó có `aria-selected="true"` và pane đang hiện của rail có hoặc `a[href^="/ma/"]` hoặc chữ "Chưa có mã nào" (hai tab movers), hoặc `[data-testid="news-rail"]` hoặc chữ "Chưa có tin hôm nay." (Tin tức); không pane nào hiện chữ "Không tải được". Bấm lại "Tăng mạnh", reload, nút "Tăng mạnh" vẫn `aria-selected="true"`.
+7. `rail-collapse`: bấm `[data-testid="rail-toggle"]`, `[data-rail]` không còn hiển thị; reload, vẫn ẩn và `document.documentElement.classList.contains("rail-collapsed")`; bấm lại thì `[data-rail]` hiện.
+8. `rail-resize`: đo bề rộng `[data-rail]`, kéo `[data-testid="column-handle"]` sang trái 80px bằng `page.mouse` (down, move nhiều bước, up); bề rộng tăng ít nhất 40px; reload, bề rộng vẫn lệch so với 300px mặc định quá 40px.
+9. `redirects`: `/stock/FPT` kết thúc ở `/ma/FPT`; `/?tab=bang-gia` kết thúc ở `/bang-gia`.
+10. `search`: gõ "fpt" vào ô `input[name="q"]` ở header, Enter, URL thành `/ma/FPT`.
+11. `news`: `/tin-tuc` có `[data-testid="news-list"]` hoặc chữ "Không có tin phù hợp."; điền `input[name="ma"]` là "FPT", gửi form, URL có `ma=FPT` và trang vẫn có một trong hai thứ trên. Nếu `main` có tab nguồn ngoài "Tất cả", bấm tab nguồn thứ hai: URL có `nguon=` và vẫn giữ `ma=FPT`, tab đó mang `aria-current="page"`; không có tab nguồn nào thì ghi `detail` "không có nguồn" và vẫn `pass`.
+12. `risk-calc`: `/danh-muc`, điền `capital` 100000000, `riskPct` 1, `entry` 50, `stop` 48; `[data-testid="risk-shares"]` chứa "500". Reload: bốn ô giữ đúng giá trị và `risk-shares` vẫn chứa "500". Đổi `stop` thành 50: `[data-testid="risk-error"]` có chữ "Giá dừng lỗ phải thấp hơn giá vào." và không còn `risk-shares`.
+13. `data-source`: `/nguon-du-lieu` có `h1` "Nguồn dữ liệu và phương pháp"; `footer` của `/` có link `a[href="/nguon-du-lieu"]`, bấm vào thì tới trang đó.
+14. `board-group`: `/bang-gia`, bấm tab "VN30" trong `main`, URL có `nhom=VN30`, `main` có chữ "Bảng giá VN30", tab "VN30" mang `aria-current="page"` và không tab sàn nào mang nó; số `tbody tr` của bảng từ 0 đến 30. Chọn option thứ hai của `select[name="nganh"]`, bấm "Lọc": URL có `nganh=` và vẫn có `nhom=VN30`, `main` không có chữ "Không tải được dữ liệu".
+15. `mobile-menu` (viewport 390×844): `/`; `nav[aria-label="Mục chính"]` của header bị ẩn, `input[name="q"]` hiện, link `a[title="GitHub"]` bị ẩn; `[data-testid="index-strip"]` có `scrollWidth > clientWidth`; `document.documentElement.scrollWidth <= window.innerWidth` (không tràn ngang). Bấm `[data-testid="mobile-menu-button"]` thì `[data-testid="mobile-menu"]` hiện và mép trên của nó lệch mép dưới `header` không quá 1px; bấm "Bảng giá" thì URL thành `/bang-gia` và menu đóng. Quay về `/`: `[data-rail]` nằm dưới `main` (toạ độ `y` lớn hơn). `/bieu-do` có `canvas` cao hơn 100px.
+16. `light-theme`: ở `/` đọc `getComputedStyle(document.body).backgroundColor` (tối); đặt `localStorage["vnstock-starter:theme"] = "light"`, reload, `html` có class `light` và màu nền `body` khác giá trị tối; chụp ảnh.
+17. `whats-new` (context mới, không đặt `seen-version`): nút badge ở header có chữ "v1.1.0"; card Changelog tự hiện, có "v1.1.0" và 8 dòng `li`; bấm "Đã hiểu" thì card đóng; reload, chờ 1 giây, card không hiện lại; bấm badge thì card mở lại với cả mục "v1.0.0".
 
-Chấp nhận: `node --check scripts/final-check.mjs` thoát 0; typecheck xanh. Script chạy thật ở Final.
+Chấp nhận: `node --check scripts/final-check.mjs` thoát 0; typecheck xanh; script có đủ 17 bước trên với đúng tên. Script chạy thật ở Final.

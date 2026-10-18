@@ -1,6 +1,6 @@
 # vnstock-js-site: thiết kế lại khung và lộ trình
 
-Ngày: 2026-10-14. Trạng thái: thiết kế đã duyệt, chưa triển khai.
+Ngày: 2026-10-14. Trạng thái: thiết kế đã duyệt; bước 1 (Đổi khung) đã triển khai ở 1.1.0, M1 trở đi chưa.
 
 Site: vnstock-js.vercel.app, repo `ttqteo/vnstock-js-site` (trước là vnstock-js-starter, thư mục local vẫn là `vnstock-js-starter`).
 
@@ -19,9 +19,10 @@ Ràng buộc giữ nguyên: Next.js + Vercel, không database, không đăng nh�
 Thanh điều hướng trên cùng, mỗi mục là một route. Khi số mục vượt khoảng 8 thì cân nhắc chuyển sang sidebar dọc có chữ như Uptrend.
 
 Header một hàng:
-- Trái: logo vnstock-js, các mục **Thị trường · Bảng giá · Biểu đồ · Cơ hội · Phân tích · Danh mục · Tin tức**, mục đang mở tô sáng.
-- Giữa: dải 4 thẻ chỉ số (VNINDEX, HNX, UPCOM, VN30) gồm điểm, thay đổi %, sparkline; bấm vào sang biểu đồ chỉ số đó.
-- Phải: tìm mã, Tài liệu, GitHub, theme, xuất/nhập cài đặt, có gì mới.
+- Trái: logo vnstock-js, các mục **Thị trường · Bảng giá · Biểu đồ · Cơ hội · Phân tích · Danh mục · Tin tức**, mục đang mở tô sáng. Bước Đổi khung chỉ có 5 mục Thị trường · Bảng giá · Biểu đồ · Danh mục · Tin tức; Cơ hội vào cùng M1, Phân tích cùng M2, khi trang của chúng có thật.
+- Phải: tìm mã, nút thu rail, Tài liệu, GitHub, theme, xuất/nhập cài đặt, có gì mới.
+
+Dải 4 thẻ chỉ số (VNINDEX, HNX, UPCOM, VN30) gồm điểm, thay đổi %, sparkline nằm trên một hàng mỏng riêng ngay dưới header, ở mọi kích thước màn hình; bấm vào sang biểu đồ chỉ số đó.
 
 | Route | Nội dung |
 |---|---|
@@ -33,12 +34,12 @@ Header một hàng:
 | `/phan-tich` | So sánh định giá trong ngành |
 | `/danh-muc` | Danh mục, nhật ký giao dịch, máy tính rủi ro |
 | `/tin-tuc` | Dòng tin lọc theo mã và nguồn |
-| `/ma/[symbol]` | Trang mã, tab Tổng quan · Biểu đồ · Tài chính · Sự kiện · Tin tức |
+| `/ma/[symbol]` | Trang mã, tab Tổng quan · Biểu đồ · Tài chính · Sự kiện · Tin tức (Đổi khung giữ trang mã một trang như hiện có; tách tab cùng M2 khi có Tài chính) |
 | `/nguon-du-lieu` | Nguồn dữ liệu, phương pháp, miễn trừ trách nhiệm |
 
 `/stock/:symbol` redirect 308 sang `/ma/:symbol` trong `next.config.ts`.
 
-Bố cục: hai cột. Trái là nội dung route. Phải là rail kéo được độ rộng, tab **Theo dõi · Tăng mạnh · Giảm mạnh · Tin tức**; `/bieu-do` và `/bang-gia` có nút thu rail. Rail trái cũ (danh sách chỉ số) bỏ, vì chỉ số đã lên header.
+Bố cục: hai cột. Trái là nội dung route. Phải là rail kéo được độ rộng, tab **Theo dõi · Tăng mạnh · Giảm mạnh · Tin tức**; nút thu rail nằm ở header trên mọi trang (cần nhất ở `/bieu-do` và `/bang-gia`), nhớ theo trình duyệt. Rail trái cũ (danh sách chỉ số) bỏ, vì chỉ số đã lên header.
 
 Điện thoại: header còn logo, tìm mã, nút menu; các mục trong menu trượt; dải chỉ số cuộn ngang; rail xuống cuối trang; bảng giá cuộn ngang.
 
@@ -54,7 +55,7 @@ Bỏ cookie `vnstock-starter-tab` và server action `loadPane`, vì tab giữa g
 | Cơ hội | Tín hiệu hôm nay kèm kế hoạch; bộ lọc theo chỉ số và tín hiệu; tỷ lệ thắng lịch sử | Tín hiệu và lọc ở M1, tỷ lệ thắng ở M4 |
 | Phân tích | So sánh P/E, P/B, ROE trong ngành, xếp hạng mã, dùng `ratios.json` | M2 |
 | Danh mục | Portfolio nhiều broker, lãi/lỗ, tỷ trọng theo ngành, nhật ký giao dịch, máy tính rủi ro | M2; máy tính rủi ro làm ngay |
-| Trang mã | Thêm tab Tài chính | M2 |
+| Trang mã | Tách tab Tổng quan · Biểu đồ · Tài chính · Sự kiện · Tin tức, thêm Tài chính | M2 |
 | Tin tức | Trang riêng, chỉ tiêu đề và link nguồn | Đổi khung |
 
 Footer mọi trang: "Miễn phí toàn bộ, không có gói trả phí" và link `/nguon-du-lieu`.
@@ -86,9 +87,9 @@ Việc nặng tính trước bằng GitHub Actions:
 - Phân tích ngành dùng `ratios.json` dựng sẵn của vnstock-js; lịch sử khối ngoại dùng recorder của v2.
 - Dữ liệu trong phiên ở M3: thanh khoản lấy từ nến 1 phút của chỉ số theo request; khối ngoại theo phút cần ghi liên tục, chỉ bật khi có server Docker qua biến môi trường.
 
-Client island: bỏ quy tắc "đúng 7 client component", thay bằng nguyên tắc chỉ dùng client khi tương tác không làm được bằng server và URL. Bộ lọc và chọn sàn là form GET trên `searchParams`. Island mới: `nav-links.tsx` (tô sáng mục, cần `usePathname`), `mobile-menu.tsx`, bảng chỉ báo trong chart, `portfolio/*` (IndexedDB), `risk-calculator.tsx`.
+Client island: bỏ quy tắc "đúng 7 client component", thay bằng nguyên tắc chỉ dùng client khi tương tác không làm được bằng server và URL. Bộ lọc và chọn sàn là form GET trên `searchParams`. Island mới: `nav-links.tsx` (tô sáng mục, cần `usePathname`), `mobile-menu.tsx`, `rail-toggle.tsx` (ẩn rail, nhớ theo trình duyệt), bảng chỉ báo trong chart, `portfolio/*` (IndexedDB), `risk-calculator.tsx`.
 
-Dữ liệu người dùng: watchlist và tab rail ở cookie; cài đặt ở localStorage prefix `vnstock-starter:`; danh mục ở IndexedDB database `vnstock-starter`, qua adapter cài đặt interface `Storage` của v2. Nút Xuất/Nhập JSON gom cả danh mục; trang Danh mục nhắc sao lưu vì đó là cách sao lưu duy nhất.
+Dữ liệu người dùng: watchlist ở cookie; tab rail đang chọn ở localStorage; cài đặt ở localStorage prefix `vnstock-starter:`; danh mục ở IndexedDB database `vnstock-starter`, qua adapter cài đặt interface `Storage` của v2. Nút Xuất/Nhập JSON gom cả danh mục; trang Danh mục nhắc sao lưu vì đó là cách sao lưu duy nhất.
 
 ## Lỗi
 

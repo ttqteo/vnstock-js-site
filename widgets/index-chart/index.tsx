@@ -5,23 +5,31 @@ import { fmtChange, fmtPct, fmtPrice } from "@/lib/format";
 import { DEFAULT_RANGE, getIndexChart, RANGES } from "./data";
 
 /**
- * VNINDEX candles with MA10/MA50 and volume. Range buttons live inside the
- * chart island and slice data client-side, so switching is instant.
+ * Index candles (VNINDEX by default) with MA10/MA50 and volume. Range buttons
+ * live inside the chart island and slice data client-side, so switching is instant.
  */
-export async function IndexChart({ height = 320, fill = false }: { height?: number; fill?: boolean }) {
+export async function IndexChart({
+  symbol = "VNINDEX",
+  height = 320,
+  fill = false,
+}: {
+  symbol?: string;
+  height?: number;
+  fill?: boolean;
+}) {
   let data;
   try {
-    data = await getIndexChart();
+    data = await getIndexChart(symbol);
   } catch {
     data = null;
   }
-  if (!data) return <PanelError title="VNINDEX" className="h-[380px]" />;
+  if (!data) return <PanelError title={symbol} className="h-[380px]" />;
 
   const state = changeState(data.change);
 
   return (
     <Panel
-      title="VNINDEX"
+      title={symbol}
       className={fill ? "flex-1" : ""}
       right={
         <p className={`num text-[13px] font-semibold ${textClass(state)}`}>

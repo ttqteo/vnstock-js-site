@@ -106,6 +106,17 @@ html.light {
   --animate-panel-out: panel-out 160ms ease-in both;
 }
 
+/* Rail hidden by the header toggle; class set before first paint. The toggle
+   only exists from xl, so below xl a remembered collapse must not apply. */
+@media (min-width: 1280px) {
+  html.rail-collapsed [data-rail] {
+    display: none;
+  }
+  html.rail-collapsed [data-shell] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Floating panels rise into place from the corner they are anchored to.
    panel-out runs before unmount, so it needs fill-mode both. */
 @keyframes panel-in {

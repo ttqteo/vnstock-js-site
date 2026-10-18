@@ -7,7 +7,7 @@ import { getWatchlist, sanitize, WATCHLIST_COOKIE } from "@/lib/watchlist";
 /** Header search; invalid input just goes home. */
 export async function goToStock(formData: FormData) {
   const q = String(formData.get("q") ?? "").trim().toUpperCase();
-  if (/^[A-Z0-9]{3,10}$/.test(q)) redirect(`/stock/${q}`);
+  if (/^[A-Z0-9]{3,10}$/.test(q)) redirect(`/ma/${q}`);
   redirect("/");
 }
 

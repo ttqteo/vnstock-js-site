@@ -37,7 +37,7 @@ function Tile({ tile, x, y, w, h }: { tile: HeatTile; x: number; y: number; w: n
   const big = w > 22 && h > 18;
   return (
     <Link
-      href={`/stock/${tile.symbol}`}
+      href={`/ma/${tile.symbol}`}
       title={`${tile.symbol} ${tile.changePercent.toFixed(2)}%`}
       className="absolute flex flex-col items-center justify-center overflow-hidden border border-bg/60 text-white"
       style={{

@@ -10,7 +10,7 @@ tăng mạnh nhất và top 5 mã giảm mạnh nhất của sàn đang chọn, 
 so với tham chiếu, chỉ lấy mã có giá trị giao dịch trên 1 tỷ để loại mã
 không thanh khoản.
 
-Hai cột cạnh nhau, mỗi dòng gồm mã (link tới /stock/mã), giá và %. Đăng ký
+Hai cột cạnh nhau, mỗi dòng gồm mã (link tới /ma/mã), giá và %. Đăng ký
 vào cuối WidgetGrid ở components/panes.tsx bằng một WidgetSlot id="top-movers".
 ```
 

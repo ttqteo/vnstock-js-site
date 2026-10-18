@@ -2,15 +2,15 @@
 
 import { useEffect, useRef } from "react";
 
-/** Resizable rails: each handle drags a CSS variable the layout grid
+/** Resizable right rail: the handle drags a CSS variable the layout grid
  * reads, so the server-rendered structure never changes. */
 
 const KEY = "vnstock-starter:columns";
-const DEFAULTS = { left: 250, right: 270 } as const;
-const LIMITS = { left: [200, 420], right: [220, 440] } as const;
-const VARS = { left: "--rail-l", right: "--rail-r" } as const;
+const DEFAULTS = { right: 300 } as const;
+const LIMITS = { right: [220, 440] } as const;
+const VARS = { right: "--rail-r" } as const;
 
-type Side = keyof typeof DEFAULTS;
+type Side = "right";
 
 function readStored(): Partial<Record<Side, number>> {
   try {
@@ -50,6 +50,7 @@ export function ColumnHandle({ side }: { side: Side }) {
       role="separator"
       aria-orientation="vertical"
       aria-label="Kéo chỉnh độ rộng cột"
+      data-testid="column-handle"
       onPointerDown={(e) => {
         e.preventDefault();
         startX.current = e.clientX;
@@ -59,7 +60,7 @@ export function ColumnHandle({ side }: { side: Side }) {
 
         const move = (ev: PointerEvent) => {
           const dx = ev.clientX - startX.current;
-          setVar(side, clamp(side, side === "left" ? startWidth.current + dx : startWidth.current - dx));
+          setVar(side, clamp(side, startWidth.current - dx));
         };
         const up = () => {
           window.removeEventListener("pointermove", move);
@@ -73,9 +74,7 @@ export function ColumnHandle({ side }: { side: Side }) {
         window.addEventListener("pointermove", move);
         window.addEventListener("pointerup", up);
       }}
-      className={`absolute inset-y-0 z-10 hidden w-1 cursor-col-resize transition-colors hover:bg-primary/40 active:bg-primary/60 xl:block ${
-        side === "left" ? "-right-0.5" : "-left-0.5"
-      }`}
+      className="absolute inset-y-0 -left-0.5 z-10 hidden w-1 cursor-col-resize transition-colors hover:bg-primary/40 active:bg-primary/60 xl:block"
     />
   );
 }
